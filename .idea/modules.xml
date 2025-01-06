@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/flutter_index_selector.iml" filepath="$PROJECT_DIR$/flutter_index_selector.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/flutter_index_selector.iml" filepath="$PROJECT_DIR$/.idea/flutter_index_selector.iml" />
     </modules>
   </component>
 </project>

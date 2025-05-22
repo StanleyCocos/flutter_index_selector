@@ -159,16 +159,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFE5E5E5)),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(),
-    );
-  }
+  Widget build(context) => const MaterialApp(home: MyHomePage());
 }
 
 class MyHomePage extends StatefulWidget {
@@ -180,18 +171,21 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<ItemModel> items = [];
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _groupKeys = {};
+  final GlobalKey _scrollViewKey = GlobalKey();
 
   @override
   void initState() {
-    for (String index in letters) {
+    for (String group in letters) {
       List<String> temp = [];
-      for (int i = 3; i <= Random().nextInt(20); i++) {
+      for (int i =0; i <= 5 + Random().nextInt(15); i++) {
         temp.add(names.random);
       }
+      _groupKeys[group] = GlobalKey();
       items.add(
         ItemModel(
-          group: index,
+          group: group,
           names: temp,
         ),
       );
@@ -222,7 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Stack(
         children: [
           _list,
-          // _index,
+          _index,
         ],
       ),
     );
@@ -230,18 +224,52 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget get _list {
     return CustomScrollView(
+      key: _scrollViewKey,
       controller: _scrollController,
       slivers: items.expand((section) {
         return [
-          SliverPersistentHeader(
-            pinned: false,
-            delegate: _SliverHeaderDelegate(section.group),
+          SliverToBoxAdapter(
+            child: Container(
+              key: _groupKeys[section.group],
+              padding: const EdgeInsets.all(12),
+              color: Colors.grey.shade300,
+              child: Text(
+                section.group,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
           SliverList(
             delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                final name = section.names[index];
-                return _buildListItem(name);
+              (context, index) {
+                return Container(
+                  height: 60,
+                  width: double.infinity,
+                  color: Colors.white,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(5)),
+                        ),
+                        clipBehavior: Clip.hardEdge,
+                        child: Image.asset(
+                            'images/${Random().nextInt(60) + 1}.pic.jpg'),
+                      ),
+                      Text(
+                        section.names[index],
+                        style: const TextStyle(
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               },
               childCount: section.names.length,
             ),
@@ -251,85 +279,37 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      color: Colors.grey.shade300,
-      child: Text(
-        title,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  Widget get _index {
+    return Positioned(
+      right: 0,
+      top: 0,
+      bottom: 0,
+      child: IndexSelector(
+        keys: letters,
+        onChanged: scrollToGroup,
       ),
     );
   }
 
-  Widget _buildListItem(String item) {
-    return Container(
-      height: 60,
-      width: double.infinity,
-      color: Colors.white,
-      alignment: Alignment.centerLeft,
-      child: Row(
-        children: [
-          Container(
-            margin: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(5)),
-            ),
-            clipBehavior: Clip.hardEdge,
-            child: Image.asset('images/${Random().nextInt(60) + 1}.pic.jpg'),
-          ),
-          Text(
-            item,
-            style: const TextStyle(
-              fontSize: 18,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  void scrollToGroup(String group) {
+    final scrollViewBox = _scrollViewKey.currentContext?.findRenderObject();
+    if (scrollViewBox == null || scrollViewBox is! RenderBox) return;
 
-  // Widget get _index {
-  //   return Positioned(
-  //     right: 0,
-  //     top: 0,
-  //     bottom: 0,
-  //     child: IndexSelector(
-  //       keys: letters,
-  //       onChanged: (v) {
-  //         // var index = items.indexWhere((element) => element.label == v);
-  //         // _scrollController.jumpTo(index * 60.0);
-  //       },
-  //     ),
-  //   );
-  // }
-}
+    final key = _groupKeys[group];
+    if (key == null) return;
 
-class _SliverHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final String title;
+    final context = key.currentContext;
+    if (context == null) return;
 
-  _SliverHeaderDelegate(this.title);
-
-  @override
-  double get minExtent => 40;
-  @override
-  double get maxExtent => 40;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Colors.grey.shade300,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      alignment: Alignment.centerLeft,
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  @override
-  bool shouldRebuild(_SliverHeaderDelegate oldDelegate) {
-    return title != oldDelegate.title;
+    final box = context.findRenderObject();
+    if (box is RenderBox) {
+      final offset = box.localToGlobal(Offset.zero, ancestor: scrollViewBox).dy;
+      final scrollOffset = _scrollController.offset + offset;
+      _scrollController.animateTo(
+        scrollOffset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 }

@@ -179,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     for (String group in letters) {
       List<String> temp = [];
-      for (int i =0; i <= 5 + Random().nextInt(15); i++) {
+      for (int i = 0; i <= 5 + Random().nextInt(15); i++) {
         temp.add(names.random);
       }
       _groupKeys[group] = GlobalKey();
@@ -263,9 +263,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       Text(
                         section.names[index],
-                        style: const TextStyle(
-                          fontSize: 15,
-                        ),
+                        style: const TextStyle(fontSize: 15),
                       ),
                     ],
                   ),

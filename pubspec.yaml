@@ -1,7 +1,7 @@
 name: flutter_index_selector
 description: "A new Flutter project."
 version: 0.0.1
-homepage:
+homepage: https://github.com/StanleyCocos/flutter_index_selector
 
 environment:
   sdk: '>=3.3.0 <4.0.0'

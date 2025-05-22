@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -140,14 +138,4 @@ class NavDialog extends StatelessWidget {
       ),
     );
   }
-}
-
-Color getRandomColor() {
-  Random random = Random();
-  return Color.fromARGB(
-    255, // Alpha值
-    random.nextInt(256), // 红色
-    random.nextInt(256), // 绿色
-    random.nextInt(256), // 蓝色
-  );
 }

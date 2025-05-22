@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_index_selector/flutter_index_selector.dart';
 
@@ -109,19 +108,19 @@ List<String> names = [
   '时光不老',
   '蓦然回首',
   '迷途未返',
-  '长安一梦',
+  '一梦',
   '青山不改',
   '细雨轻愁',
   '月下长歌',
   '柳下桃花',
   '凌乱的记忆',
   '拾光旅行',
-  '东风夜放花千树',
-  '半夏微凉',
+  'aaaa',
+  'jldd',
   '阳光正好',
   '爱笑的眼睛',
   '梧桐细雨',
-  '十年如梦',
+  'green',
   '荒野星辰',
   '白驹过隙',
   '清风明月夜',
@@ -134,8 +133,7 @@ List<String> names = [
   '最后的烟火',
   '月亮邮递员',
   '南山有木',
-  '时间偷不走的记忆'
-      'dddssss'
+  '时间偷不走的记忆',
 ];
 
 extension ListExtension<E> on List<E> {
@@ -146,10 +144,13 @@ extension ListExtension<E> on List<E> {
 }
 
 class ItemModel {
-  String name = '';
-  String label = '';
+  String group = '';
+  List<String> names = [];
 
-  ItemModel({this.name = '', this.label = ''});
+  ItemModel({
+    this.group = '',
+    this.names = const [],
+  });
 }
 
 void main() => runApp(const MyApp());
@@ -179,15 +180,27 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<ItemModel> items = [];
+  ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    for (String index in letters) {
+      List<String> temp = [];
+      for (int i = 3; i <= Random().nextInt(20); i++) {
+        temp.add(names.random);
+      }
+      items.add(
+        ItemModel(
+          group: index,
+          names: temp,
+        ),
+      );
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    for (String index in letters) {
-      for (int i = 3; i <= Random().nextInt(20); i++) {
-        items.add(ItemModel(label: index, name: names.random));
-      }
-    }
-
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -209,64 +222,114 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Stack(
         children: [
           _list,
-          _index,
+          // _index,
         ],
       ),
     );
   }
 
   Widget get _list {
-    return ListView.separated(
-      itemBuilder: (context, index) {
-        return Container(
-          height: 1,
-          color: Colors.grey[100],
-        );
-      },
-      separatorBuilder: (context, index) {
-        return Container(
-          height: 60,
-          width: double.infinity,
-          color: Colors.white,
-          alignment: Alignment.centerLeft,
-          child: Row(
-            children: [
-              Container(
-                margin: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                ),
-                clipBehavior: Clip.hardEdge,
-                child:
-                    Image.asset('images/${Random().nextInt(60) + 1}.pic.jpg'),
-              ),
-              Text(
-                items[index].name,
-                style: const TextStyle(
-                  fontSize: 18,
-                ),
-              ),
-            ],
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: items.expand((section) {
+        return [
+          SliverPersistentHeader(
+            pinned: false,
+            delegate: _SliverHeaderDelegate(section.group),
           ),
-        );
-      },
-      itemCount: items.length,
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                final name = section.names[index];
+                return _buildListItem(name);
+              },
+              childCount: section.names.length,
+            ),
+          ),
+        ];
+      }).toList(),
     );
   }
 
-  Widget get _index {
-    return Positioned(
-      right: 0,
-      top: 0,
-      bottom: 0,
-      child: IndexSelector(
-        keys: letters,
-        onChanged: (v) {
-          if (kDebugMode) {
-            print(v);
-          }
-        },
+  Widget _buildSectionHeader(String title) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      color: Colors.grey.shade300,
+      child: Text(
+        title,
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
     );
+  }
+
+  Widget _buildListItem(String item) {
+    return Container(
+      height: 60,
+      width: double.infinity,
+      color: Colors.white,
+      alignment: Alignment.centerLeft,
+      child: Row(
+        children: [
+          Container(
+            margin: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+            ),
+            clipBehavior: Clip.hardEdge,
+            child: Image.asset('images/${Random().nextInt(60) + 1}.pic.jpg'),
+          ),
+          Text(
+            item,
+            style: const TextStyle(
+              fontSize: 18,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget get _index {
+  //   return Positioned(
+  //     right: 0,
+  //     top: 0,
+  //     bottom: 0,
+  //     child: IndexSelector(
+  //       keys: letters,
+  //       onChanged: (v) {
+  //         // var index = items.indexWhere((element) => element.label == v);
+  //         // _scrollController.jumpTo(index * 60.0);
+  //       },
+  //     ),
+  //   );
+  // }
+}
+
+class _SliverHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final String title;
+
+  _SliverHeaderDelegate(this.title);
+
+  @override
+  double get minExtent => 40;
+  @override
+  double get maxExtent => 40;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Colors.grey.shade300,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      alignment: Alignment.centerLeft,
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverHeaderDelegate oldDelegate) {
+    return title != oldDelegate.title;
   }
 }

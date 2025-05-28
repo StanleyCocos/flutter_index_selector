@@ -28,6 +28,9 @@ class _NavListState extends State<IndexSelector> {
         GestureDetector(
           onVerticalDragDown: (detail) {
             int index = (detail.localPosition.dy ~/ _itemHeight).round();
+            if(index > widget.keys.length - 1) {
+              index = widget.keys.length - 1;
+            }
             _showFloatingWindow(widget.keys[index]);
             setState(() {
               currentIndex = index;
